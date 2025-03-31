@@ -1,0 +1,56 @@
+@model Inmobiliaria_Avgustin.Models.Inquilino
+@{
+    ViewData["Title"] = "Editar Inquilino";
+}
+
+<h2>Editar Inquilino</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label>Nombre</label>
+        <input asp-for="Nombre" />
+        <span asp-validation-for="Nombre"></span>
+    </div>
+
+    <div>
+        <label>Apellido</label>
+        <input asp-for="Apellido" />
+        <span asp-validation-for="Apellido"></span>
+    </div>
+
+    <div>
+        <label>DNI</label>
+        <input asp-for="Dni" />
+        <span asp-validation-for="Dni"></span>
+    </div>
+
+    <div>
+        <label>Teléfono</label>
+        <input asp-for="Telefono" />
+        <span asp-validation-for="Telefono"></span>
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+
+    <div>
+        <label>Trabajo</label>
+        <input asp-for="Trabajo" />
+        <span asp-validation-for="Trabajo"></span>
+    </div>
+
+
+    <div>
+        <label>Ingresos</label>
+        <input asp-for="Ingresos" />
+        <span asp-validation-for="Ingresos"></span>
+    </div>
+
+    <button type="submit">Guardar</button>
+</form>

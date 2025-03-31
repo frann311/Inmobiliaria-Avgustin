@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Lista de Propietarios";
+}
+
+<div class="container mt-4">
+    <h2>Lista de Inquilinos</h2>
+    <a href="@Url.Action("Create", "Inquilino")" class="btn btn-success mb-3">Agregar Nuevo Inquilino</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Trabajo</th>
+                <th>Ingresos</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inquilino in Model)
+            {
+                <tr>
+                    <td>@inquilino.Dni</td>
+                    <td>@inquilino.Nombre</td>
+                    <td>@inquilino.Apellido</td>
+                    <td>@inquilino.Telefono</td>
+                    <td>@inquilino.Email</td>
+                    <td>@inquilino.Trabajo</td>
+                    <td>@inquilino.Ingresos</td>
+
+
+                    <td>
+                        <a href="@Url.Action("Edit", "inquilino", new { id = inquilino.Id })"
+                            class="btn btn-warning btn-sm">Editar</a>
+                        <a href="@Url.Action("Delete", "inquilino", new { id = inquilino.Id })"
+                            class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

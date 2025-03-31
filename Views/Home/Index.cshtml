@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="container text-center mt-5">
+    <h1 class="mb-4">Bienvenido a la Gestión Inmobiliaria</h1>
+    <p class="lead">Seleccione una opción para administrar:</p>
+
+    <div class="row justify-content-center">
+        <!-- Sección Propietarios -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-primary">
+                <div class="card-body">
+                    <h3 class="card-title">Propietarios</h3>
+                    <p class="card-text">Administre los propietarios de la inmobiliaria.</p>
+                    <a href="@Url.Action("Index", "Propietario")" class="btn btn-primary">Gestionar Propietarios</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Inquilinos -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-success">
+                <div class="card-body">
+                    <h3 class="card-title">Inquilinos</h3>
+                    <p class="card-text">Administre los inquilinos de la inmobiliaria.</p>
+                    <a href="@Url.Action("Index", "Inquilino")" class="btn btn-success">Gestionar Inquilinos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
