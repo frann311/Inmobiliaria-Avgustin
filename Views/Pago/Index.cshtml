@@ -1,0 +1,78 @@
+@model IEnumerable<Inmobiliaria_Avgustin.Models.Pago>
+
+@{
+    ViewData["Title"] = "Listado de Pagos";
+    var contratoId = ViewBag.Contrato.Id; // Obtener el ID del contrato desde ViewBag
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Pagos</h2>
+    <a asp-controller="Contrato" asp-action="Details" asp-route-id="@contratoId" class="btn btn-primary">Volver
+        al Contrato</a>
+</div>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th># Pago</th>
+            <th>Fecha Pago</th>
+            <th>Fecha Vencimiento</th>
+            <th>Concepto</th>
+            <th>Importe</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pago in Model)
+        {
+            <tr>
+                <td>@pago.NumeroPago</td>
+
+                <td>
+                    @if (pago.FechaPago != null)
+                    {
+                        @pago.FechaPago.Value.ToString("dd/MM/yyyy")
+                    }
+                    else
+                    {
+                        <span class="text-muted">Pendiente</span>
+                    }
+                </td>
+                <td>@pago.Fecha_Vencimiento.ToString("dd/MM/yyyy")</td>
+                <td>@(string.IsNullOrEmpty(pago.Concepto) ? "-" : pago.Concepto)</td>
+                <td>@pago.Importe.ToString("C")</td>
+                <td>
+                    @if (pago.Anulado)
+                    {
+                        <span class="badge bg-danger">Anulado</span>
+                    }
+                    else if (pago.FechaPago == null)
+                    {
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Pagado</span>
+                    }
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        @* Editar concepto *@
+                        @if (!pago.Anulado && pago.FechaPago == null)
+                        {
+                            <a asp-action="Pagar" asp-route-id="@pago.Id" class="btn btn-sm btn-outline-primary">Pagar</a>
+                            <a asp-action="Edit" asp-route-id="@pago.Id" class="btn btn-sm btn-outline-primary">Editar</a>
+
+                            <form asp-action="Anular" asp-route-id="@pago.Id" method="post" class="d-inline-block">
+                                <a asp-action="Anular" asp-route-id="@pago.Id" class="btn btn-sm btn-outline-danger">Anular</a>
+                            </form>
+
+                        }
+                        <a asp-action="Details" asp-route-id="@pago.Id" class="btn btn-sm btn-outline-primary">Mas</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

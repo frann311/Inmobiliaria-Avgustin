@@ -1,0 +1,87 @@
+@model Inmobiliaria_Avgustin.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Detalles del Inquilino";
+    var contratos = ViewBag.Contratos as List<Contrato> ?? new List<Contrato>();
+}
+
+<h2>Detalles del Inquilino</h2>
+
+<div class="row mt-4">
+    <!-- Columna izquierda: datos básicos -->
+    <div class="col-md-6">
+        <h4>Información Personal</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>ID</th>
+                <td>@Model.Id</td>
+            </tr>
+            <tr>
+                <th>DNI</th>
+                <td>@Model.Dni</td>
+            </tr>
+            <tr>
+                <th>Nombre</th>
+                <td>@Model.Nombre @Model.Apellido</td>
+            </tr>
+            <tr>
+                <th>Teléfono</th>
+                <td>@Model.Telefono</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>@Model.Email</td>
+            </tr>
+        </table>
+
+        <h5 class="mt-4">Contratos Asociados</h5>
+        @if (contratos != null && contratos.Any())
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Inmueble</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in contratos)
+                    {
+                        <tr>
+                            <td>@c.Id</td>
+                            <td>@c.Inmueble?.Direccion</td>
+                            <td>@c.Fecha_Inicio.ToString("dd/MM/yyyy")</td>
+                            <td>@c.Fecha_Fin.ToString("dd/MM/yyyy")</td>
+                            <td>@(c.Fecha_Rescision == null ? "Vigente" : "Rescindido")</td>
+                            <td>
+                                <a asp-controller="Contrato" asp-action="Details" asp-route-id="@c.Id"
+                                    class="btn btn-sm btn-link">Ver</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No tiene contratos registrados.</p>
+        }
+    </div>
+
+    <!-- Columna derecha: acciones -->
+    <div class="col-md-6">
+        <h4>Acciones</h4>
+        <div class="d-grid gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar Inquilino</a>
+            <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                onsubmit="return confirm('¿Seguro que desea eliminar este inquilino?');">
+                <button type="submit" class="btn btn-danger">Eliminar Inquilino</button>
+            </form>
+        </div>
+    </div>
+</div>

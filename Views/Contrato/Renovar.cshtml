@@ -1,0 +1,214 @@
+@using Inmobiliaria_Avgustin.Models
+@model Inmobiliaria_Avgustin.Models.Contrato
+
+@{
+    ViewData["Title"] = "Editar Contrato";
+
+    var ContratosVigentes = ViewBag.ContratosVigentes as IList<Contrato> ?? new List<Contrato>();
+    var Inquilinos = ViewBag.InquilinoSeleccionado;
+    var Inmuebles = ViewBag.InmuebleSeleccionado;
+    var contratoOriginal = ViewBag.ContratoOriginal;
+    var otrosContratosVigentes = ContratosVigentes
+    .Where(c => c.Id != Model.Id) // Model.Id es el contrato que estás editando
+    .ToList();
+
+}
+
+<h2>Renovar Contrato</h2>
+
+@if (ContratosVigentes.Any())
+{
+    <div class="alert alert-warning" id="fechasOcupadasContainer">
+        <strong>⚠️ Fechas ya ocupadas:</strong>
+        <ul>
+            @foreach (var contrato in ContratosVigentes)
+            {
+                <li>
+                    Desde <strong>@contrato.Fecha_Inicio.ToString("dd/MM/yyyy")</strong> hasta
+                    @if (contrato.Fecha_Rescision != null)
+                    {
+                        <strong>@contrato.Fecha_Rescision?.ToString("dd/MM/yyyy")</strong> <span
+                            class="text-danger">(rescindido)</span>
+                    }
+                    else
+                    {
+                        <strong>@contrato.Fecha_Fin.ToString("dd/MM/yyyy")</strong>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}
+else
+{
+    <div class="alert alert-info" id="fechasOcupadasContainer">
+        <p>No hay otros contratos vigentes para este inmueble.</p>
+    </div>
+}
+
+
+<!-- Sección de Datos del Contrato -->
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-file-contract me-2"></i>Datos del Contrato
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Datos del Inquilino -->
+            <div class="col-md-4 border-end">
+                <h6 class="text-primary">
+                    <i class="fas fa-user-tie me-2"></i>Inquilino
+                </h6>
+                <div class="ps-3">
+                    <p class="mb-1"><strong>Nombre:</strong> @Inquilinos.Nombre @Inquilinos.Apellido</p>
+                    <p class="mb-1"><strong>DNI:</strong> @Inquilinos.Dni</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> @Inquilinos.Telefono</p>
+                    <p class="mb-1"><strong>Email:</strong> @Inquilinos.Email</p>
+                </div>
+            </div>
+
+            <!-- Datos del Inmueble -->
+            <div class="col-md-4 border-end">
+                <h6 class="text-primary">
+                    <i class="fas fa-home me-2"></i>Inmueble
+                </h6>
+                <div class="ps-3">
+                    <p class="mb-1"><strong>Dirección:</strong> @Inmuebles.Direccion</p>
+                    <p class="mb-1"><strong>Tipo:</strong> @Inmuebles.Tipo.Nombre</p>
+                    <p class="mb-1"><strong>Precio Base:</strong> @Inmuebles.Precio.ToString("C")</p>
+                    <p class="mb-1"><strong>Ambientes:</strong> @Inmuebles.Ambientes</p>
+                    <p class="mb-1"><strong>Uso:</strong> @Inmuebles.Uso.Nombre</p>
+                </div>
+            </div>
+
+            <!-- Datos del Contrato -->
+            <div class="col-md-4">
+                <h6 class="text-primary">
+                    <i class="fas fa-file-signature me-2"></i>Contrato
+                </h6>
+                <div class="ps-3">
+                    <p class="mb-1"><strong>Fecha Inicio:</strong>
+                        @(contratoOriginal.Fecha_Inicio.ToString("dd/MM/yyyy"))
+                    </p>
+                    <p class="mb-1"><strong>Fecha Fin:</strong> @(contratoOriginal.Fecha_Fin.ToString("dd/MM/yyyy"))</p>
+                    @if (contratoOriginal.Fecha_Rescision != null)
+                    {
+                        <p class="mb-1 text-danger"><strong>Rescindido:</strong>
+                            @(contratoOriginal.Fecha_Rescision?.ToString("dd/MM/yyyy"))</p>
+                    }
+                    <p class="mb-1"><strong>Importe Mensual:</strong> @(contratoOriginal.Monto.ToString("C"))</p>
+                    <p class="mb-1"><strong>Estado:</strong> @(contratoOriginal.Fecha_Rescision != null ? "Rescindido" :
+                                                "Vigente")</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<form id="Renovar" asp-action="Renovar" method="post">
+    <div class="form-group">
+        <input id="Id_Inmueble" name="Id_Inmueble" class="form-control" type="hidden" value="@Model.Id_Inmueble" />
+        <span asp-validation-for="Id_Inmueble" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Id_Inquilino" class="control-label">Inquilino</label>
+        <input asp-for="Id_Inquilino" type="text" id="Id_Inquilino" name="Id_Inquilino" class="form-control"
+            value="@Model.Id_Inquilino" hidden />
+        <span asp-validation-for="Id_Inquilino" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Monto" class="control-label">Monto</label>
+        <input asp-for="Monto" class="form-control" type="number" name="Monto" step="0.01" />
+        <span asp-validation-for="Monto" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Fecha_Inicio" class="control-label">Fecha de Inicio</label>
+        <input id="fecha_inicio" asp-for="Fecha_Inicio" class="form-control" type="date" required
+            min="@(contratoOriginal.Fecha_Fin.ToString("yyyy/MM/dd"))" />
+        <span asp-validation-for="Fecha_Inicio" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Fecha_Fin" class="control-label">Meses de duracion</label>
+        <input id="meses" class="form-control" type="number" required min="1" value="@ViewBag.MesesDuracion" />
+        <span asp-validation-for="Fecha_Fin" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <input id="fecha_fin" asp-for="Fecha_Fin" class="form-control" type="date" required min="1" hidden />
+    </div>
+
+    <br />
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        console.log("sadsdas");
+
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+
+            // Obtener elementos
+            let fechaInicioInput = document.getElementById("fecha_inicio");
+            let mesesInput = document.getElementById("meses");
+            let fechaFinHiddenInput = document.getElementById("fecha_fin");
+
+            // Validar que existan valores
+            if (!fechaInicioInput.value || !mesesInput.value) {
+                alert("Por favor complete fecha de inicio y meses de duración");
+                return;
+            }
+
+            // Crear objeto Date a partir de la fecha de inicio
+            let fechaInicio = new Date(fechaInicioInput.value);
+
+            // Sumar los meses
+            let meses = parseInt(mesesInput.value);
+            fechaInicio.setMonth(fechaInicio.getMonth() + meses);
+
+            // Formatear como YYYY-MM-DD (formato que ASP.NET Core espera)
+            let year = fechaInicio.getFullYear();
+            let month = String(fechaInicio.getMonth() + 1).padStart(2, '0');
+            let day = String(fechaInicio.getDate()).padStart(2, '0');
+            let fechaFinFormateada = `${year}-${month}-${day}`;
+
+            // Asignar el valor al campo oculto
+            fechaFinHiddenInput.value = fechaFinFormateada;
+
+            // Verificar en consola antes de enviar
+            console.log("Fecha Fin calculada:", fechaFinHiddenInput.value);
+            console.log("Fecha Inicio:", fechaInicioInput.value);
+
+
+            // Ahora sí enviar el formulario
+            this.submit();
+        });
+
+
+
+
+
+
+
+
+
+
+    </script>
+}

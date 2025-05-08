@@ -1,0 +1,62 @@
+@model Inmobiliaria_Avgustin.Models.Pago
+
+@{
+    ViewData["Title"] = "Editar Concepto del Pago";
+}
+
+<h2>Editar Concepto del Pago</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>Detalles del Pago</strong>
+    </div>
+    <div class="card-body">
+        <p><strong># Pago:</strong> @Model.NumeroPago</p>
+        <p><strong>Vencimiento:</strong> @Model.Fecha_Vencimiento.ToString("dd/MM/yyyy")</p>
+        <p><strong>Fecha de Pago:</strong>
+            @{
+                if (Model.FechaPago.HasValue)
+                {
+                    @Model.FechaPago.Value.ToString("dd/MM/yyyy")
+                }
+                else
+                {
+                    <em class="text-muted">Pendiente</em>
+                }
+            }
+        </p>
+        <p><strong>Importe:</strong> @Model.Importe.ToString("C")</p>
+        <p><strong>Estado:</strong>
+            @if (Model.Anulado)
+            {
+                <span class="badge bg-danger">Anulado</span>
+            }
+            else if (!Model.FechaPago.HasValue)
+            {
+                <span class="badge bg-warning text-dark">Pendiente</span>
+            }
+            else
+            {
+                <span class="badge bg-success">Pagado</span>
+            }
+        </p>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="Concepto" class="form-label">Concepto</label>
+        <input asp-for="Concepto" class="form-control" />
+        <span asp-validation-for="Concepto" class="text-danger"></span>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-controller="Pago" asp-action="Index" asp-route-id="@Model.ContratoId"
+            class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

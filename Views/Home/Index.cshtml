@@ -28,5 +28,38 @@
                 </div>
             </div>
         </div>
+
+        <!-- Sección Inmuebles -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-success">
+                <div class="card-body">
+                    <h3 class="card-title">Inmuebles</h3>
+                    <p class="card-text">Administre los Inmuebles de la inmobiliaria.</p>
+                    <a href="@Url.Action("Index", "Inmueble")" class="btn btn-success">Gestionar Inmuebles</a>
+                </div>
+            </div>
+        </div>
+        <!-- Sección Contrato -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-success">
+                <div class="card-body">
+                    <h3 class="card-title">Contratos</h3>
+                    <p class="card-text">Administre los Contratos de la inmobiliaria.</p>
+                    <a href="@Url.Action("Index", "Contrato")" class="btn btn-success">Gestionar Contratos</a>
+                </div>
+            </div>
+        </div>
+        @if (User.IsInRole("Administrador"))
+        {
+            <div class="col-md-5">
+                <div class="card shadow-lg border-success">
+                    <div class="card-body">
+                        <h3 class="card-title">Usuarios</h3>
+                        <p class="card-text">Administre los Usuarios de la inmobiliaria.</p>
+                        <a href="@Url.Action("Index", "Usuario")" class="btn btn-success">Gestionar Usuarios</a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>

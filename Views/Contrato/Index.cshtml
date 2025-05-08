@@ -1,0 +1,235 @@
+@{
+    ViewData["Title"] = "Lista de Contratos";
+    var inmuebleSeleccionado = ViewBag.InmuebleSeleccionado as Inmueble;
+}
+
+<div class="container mt-4">
+    <h2>Lista de Contratos</h2>
+    <a href="@Url.Action("Index", "Inmueble")" class="btn btn-success mb-3">Buscar inmueble</a>
+    <form id="filtroFechasForm" method="get" novalidate class="row g-3 mb-4 needs-validation">
+        <div class="col-auto">
+            <label for="fechaDesde" class="form-label">Desde</label>
+            <input type="date" id="fechaDesde" name="fechaDesde" value="@ViewBag.FechaDesde" class="form-control"
+                required />
+            <div class="invalid-feedback">
+                Por favor ingresá la fecha “Desde”.
+            </div>
+        </div>
+        <div class="col-auto">
+            <label for="fechaHasta" class="form-label">Hasta</label>
+            <input type="date" id="fechaHasta" name="fechaHasta" value="@ViewBag.FechaHasta" class="form-control"
+                required />
+            <div class="invalid-feedback">
+                Por favor ingresá la fecha “Hasta” o corregí el orden.
+            </div>
+        </div>
+
+        <!-- Plazo en días -->
+        <div class="col-auto">
+            <label for="diasVencimiento" class="form-label">Vence en</label>
+            <select id="diasVencimiento" name="diasVencimiento" class="form-select">
+                <option value="">Todos</option>
+                <option value="30" selected="@(ViewBag.DiasVencimiento == 30 ? "selected" : null)">30 días</option>
+                <option value="60" selected="@(ViewBag.DiasVencimiento == 60 ? "selected" : null)">60 días</option>
+                <option value="90" selected="@(ViewBag.DiasVencimiento == 90 ? "selected" : null)">90 días</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label for="InmuebleId" class="form-label">Inmueble</label>
+            <select id="Inmueble" name="InmuebleId" class="form-select">
+                @if (inmuebleSeleccionado != null)
+                {
+                    <option value="@inmuebleSeleccionado.Id">
+                        @inmuebleSeleccionado.Direccion @inmuebleSeleccionado.Precio.ToString("C")
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+        <div class="col-auto align-self-end">
+            <a asp-controller="Contrato" asp-action="Index" class="btn btn-primary btn-sm">quitar Filtros</a>
+        </div>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Inquilino</th>
+                <th>Monto</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Multa</th>
+                <th>Fecha Rescisión</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contrato in Model)
+            {
+                <tr>
+                    <td>@($"{contrato.Inquilino.Nombre} {contrato.Inquilino.Apellido}")</td>
+                    <td>@contrato.Monto.ToString("C")</td>
+                    <td>@contrato.Fecha_Inicio.ToString("yyyy-MM-dd")</td>
+                    <td>@contrato.Fecha_Fin.ToString("yyyy-MM-dd")</td>
+                    <td>@(contrato.Multa == null ? "-" : contrato.Multa)</td>
+                    <td>@(contrato.Fecha_Rescision == null ? "-" : contrato.Fecha_Rescision?.ToString("yyyy-MM-dd"))</td>
+                    <td>
+                        @{
+                            var fechaActual = DateTime.Today;
+                            var contratoVigente = contrato.Fecha_Inicio <= fechaActual;
+                        }
+                        <a href="@Url.Action("Edit", "Contrato", new { id = contrato.Id })"
+                            class="btn btn-warning btn-sm @(contratoVigente ? "disabled" : "")">Editar</a>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <a href="@Url.Action("Delete", "Contrato", new { id = contrato.Id })"
+                                class="btn btn-danger btn-sm @(contratoVigente ? "disabled" : "")">Eliminar</a>
+                        }
+
+                        <a href="@Url.Action("Details", "Contrato", new { id = contrato.Id })"
+                            class="btn btn-danger btn-sm">Mas</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <nav aria-label="Paginación"></nav>
+    <ul class="pagination justify-content-center">
+
+        @{
+            int paginaActual = ViewBag.Page;
+            int totalPaginas = ViewBag.TotalPaginas;
+        }
+
+        <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new {
+                fechaDesde = ViewBag.FechaDesde,
+                fechaHasta = ViewBag.FechaHasta,
+                diasVencimiento = ViewBag.DiasVencimiento,
+                InmuebleId = inmuebleSeleccionado?.Id,
+                page = paginaActual - 1
+            })">Anterior</a>
+        </li>
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Página @paginaActual de @totalPaginas
+            </span>
+        </li>
+
+        <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new {
+                fechaDesde = ViewBag.FechaDesde,
+                fechaHasta = ViewBag.FechaHasta,
+                diasVencimiento = ViewBag.DiasVencimiento,
+                InmuebleId = inmuebleSeleccionado?.Id,
+                page = paginaActual + 1
+            })">Siguiente</a>
+        </li>
+    </ul>
+</nav>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            $(document).ready(function () {
+                $('#Inmueble').select2({
+                    placeholder: "Buscar Inmueble...",
+                    language: "es",
+                    width: '100%',
+                    minimumInputLength: 3,
+                    ajax: {
+                        delay: 250,
+                        dataType: "json",
+                        cache: true,
+                        url: function (params) {
+                            let q = params.term ? encodeURIComponent(params.term) : "";
+                            return `/Inmueble/Buscar/${q}`;
+                        },
+                        processResults: function (res) {
+                            console.log("Respuesta de la API:", res);
+                            return {
+                                results: res.datos.map(p => ({
+                                    id: p.id,
+                                    text: `${p.direccion} $${p.precio}`
+                                }))
+                            };
+                        }
+                    }
+                });
+
+                // Cuando seleccionás una opción, agregala manualmente como option
+                $('form').on('submit', function () {
+                    console.log("Valor de InmuebleId:", $('#Inmueble').val());
+                    let selectedData = $('#Inmueble').select2('data')[0];
+                    if (selectedData) {
+                        let option = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#Inmueble').append(option);
+                    }
+                });
+
+            });
+
+
+            (function () {
+                'use strict';
+                var form = document.getElementById('filtroFechasForm');
+                var desde = document.getElementById('fechaDesde');
+                var hasta = document.getElementById('fechaHasta');
+
+                form.addEventListener('submit', function (e) {
+                    // Limpiar estados previos
+                    desde.classList.remove('is-invalid');
+                    hasta.classList.remove('is-invalid');
+
+                    var valDesde = desde.value;
+                    var valHasta = hasta.value;
+                    var valid = true;
+
+                    // Si ambos vacíos, dejamos pasar sin más validaciones
+                    if (!valDesde && !valHasta) {
+                        form.classList.remove('was-validated');
+                        return; // sale del handler y envía
+                    }
+
+                    // Si uno está vacío pero el otro no → error de requerido
+                    if (!valDesde && valHasta) {
+                        desde.classList.add('is-invalid');
+                        valid = false;
+                    }
+                    if (!valHasta && valDesde) {
+                        hasta.classList.add('is-invalid');
+                        valid = false;
+                    }
+
+                    // Si ambos tienen valor, validar orden
+                    if (valDesde && valHasta) {
+                        if (new Date(valHasta) < new Date(valDesde)) {
+                            hasta.classList.add('is-invalid');
+                            // Ajustar mensaje
+                            hasta.nextElementSibling.textContent = '“Hasta” no puede ser anterior a “Desde”.';
+                            valid = false;
+                        }
+                    }
+
+                    if (!valid) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            })();
+
+
+
+        </script>
+    }
+}

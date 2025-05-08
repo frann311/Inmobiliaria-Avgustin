@@ -35,11 +35,33 @@
                     <td>
                         <a href="@Url.Action("Edit", "inquilino", new { id = inquilino.Id })"
                             class="btn btn-warning btn-sm">Editar</a>
-                        <a href="@Url.Action("Delete", "inquilino", new { id = inquilino.Id })"
-                            class="btn btn-danger btn-sm">Eliminar</a>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <a href="@Url.Action("Delete", "inquilino", new { id = inquilino.Id })"
+                                class="btn btn-danger btn-sm">Eliminar</a>
+                        }
+                        <a href="@Url.Action("Details", "inquilino", new { id = inquilino.Id })"
+                            class="btn btn-danger btn-sm">Mas</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    <nav aria-label="Paginación"></nav>
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(ViewBag.Page <= 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page - 1 })">Anterior</a>
+        </li>
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Página @ViewBag.Page de @ViewBag.TotalPages
+            </span>
+        </li>
+
+        <li class="page-item @(ViewBag.Page >= ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page + 1 })">Siguiente</a>
+        </li>
+    </ul>
+    </nav>
 </div>

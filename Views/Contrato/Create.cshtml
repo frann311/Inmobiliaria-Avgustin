@@ -1,0 +1,177 @@
+@using Inmobiliaria_Avgustin.Models
+@model Inmobiliaria_Avgustin.Models.Contrato
+
+@{
+    ViewData["Title"] = "Crear Contrato";
+
+    var ContratosVigentes = ViewBag.ContratosVigentes as IList<Contrato> ?? new List<Contrato>();
+    var Inquilinos = ViewBag.InquilinoSeleccionado; ;
+}
+
+<h2>Crear Contrato</h2>
+<div class="alert alert-warning" id="fechasOcupadasContainer">
+    @if (ContratosVigentes.Any())
+    {
+        <strong>⚠️ Fechas ya ocupadas:</strong>
+        <ul>
+            @foreach (var contrato in ContratosVigentes)
+            {
+                <li>
+                    Desde <strong>@contrato.Fecha_Inicio.ToString("dd/MM/yyyy")</strong> hasta
+                    @if (contrato.Fecha_Rescision != null)
+                    {
+                        <strong>@contrato.Fecha_Rescision?.ToString("dd/MM/yyyy")</strong> <span
+                            class="text-danger">(rescindido)</span>
+                    }
+                    else
+                    {
+                        <strong>@contrato.Fecha_Fin.ToString("dd/MM/yyyy")</strong>
+                    }
+                </li>
+
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No hay contratos vigentes para este inmueble.</p>
+    }
+
+    </ul>
+</div>
+
+<form id="CreateContratoForm" asp-action="Create" method="post">
+    <div class="form-group">
+        <input id="Id_Inmueble" name="Id_Inmueble" class="form-control" type="hidden" value="@Model.Id_Inmueble" />
+        <span asp-validation-for="Id_Inmueble" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Id_Inquilino" class="control-label">Inquilino</label>
+        <select id="Id_Inquilino" name="Id_Inquilino" class="form-control" style="width: 100%;">
+            @if (Inquilinos != null)
+            {
+                <option value="@Inquilinos.Id">@Inquilinos.Nombre @Inquilinos.Apellido</option>
+            }
+        </select>
+        <span asp-validation-for="Id_Inquilino" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Monto" class="control-label">Monto</label>
+        <input asp-for="Monto" class="form-control" type="number" name="Monto" step="0.01" />
+        <span asp-validation-for="Monto" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Fecha_Inicio" class="control-label">Fecha de Inicio</label>
+        <input asp-for="Fecha_Inicio" id="fecha_inicio" class="form-control" type="date" required />
+        <span asp-validation-for="Fecha_Inicio" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Fecha_Fin" class="control-label">Meses de duracion</label>
+        <input id="meses" class="form-control" type="number" required min="1" />
+        <span asp-validation-for="Fecha_Fin" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <input id="fecha_fin" asp-for="Fecha_Fin" class="form-control" type="date" required min="1" hidden />
+    </div>
+
+    <br />
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+
+
+        $(document).ready(function () {
+            // Inquilinos
+            $('#Id_Inquilino').select2({
+                placeholder: "Buscar inquilino...",
+                language: "es",
+                width: '100%',
+                minimumInputLength: 2,
+                ajax: {
+                    delay: 300,
+                    dataType: "json",
+                    url: function (params) {
+                        let q = params.term ? encodeURIComponent(params.term) : "";
+                        return `/Inquilino/Buscar/${q}`;
+                    },
+                    processResults: function (res) {
+                        return {
+                            results: res.datos.map(i => ({
+                                id: i.id,
+                                text: `${i.nombre} ${i.apellido}`
+                            }))
+                        };
+                    }
+                }
+            });
+            // Agregar los option seleccionados en el form
+            $('form').on('submit', function (e) {
+                console.log("Valor de Inquilino di: ", $('#Id_Inquilino').val());
+                let selectedData = $('#Id_Inquilino').select2('data')[0];
+                if (selectedData) {
+                    let option = new Option(selectedData.text, selectedData.id, true, true);
+                    $('#Id_Inquilino').append(option);
+                }
+
+                e.preventDefault();
+
+                // Obtener elementos
+                let fechaInicioInput = document.getElementById("fecha_inicio");
+                let mesesInput = document.getElementById("meses");
+                let fechaFinHiddenInput = document.getElementById("fecha_fin");
+
+                // Validar que existan valores
+                if (!fechaInicioInput.value || !mesesInput.value) {
+                    alert("Por favor complete fecha de inicio y meses de duración");
+                    return;
+                }
+
+                // Crear objeto Date a partir de la fecha de inicio
+                let fechaInicio = new Date(fechaInicioInput.value);
+
+                // Sumar los meses
+                let meses = parseInt(mesesInput.value);
+                fechaInicio.setMonth(fechaInicio.getMonth() + meses);
+
+                // Formatear como YYYY-MM-DD (formato que ASP.NET Core espera)
+                let year = fechaInicio.getFullYear();
+                let month = String(fechaInicio.getMonth() + 1).padStart(2, '0');
+                let day = String(fechaInicio.getDate()).padStart(2, '0');
+                let fechaFinFormateada = `${year}-${month}-${day}`;
+
+                // Asignar el valor al campo oculto
+                fechaFinHiddenInput.value = fechaFinFormateada;
+
+                // Verificar en consola antes de enviar
+                console.log("Fecha Fin calculada:", fechaFinHiddenInput.value);
+                console.log("Fecha Inicio:", fechaInicioInput.value);
+
+
+                // Ahora sí enviar el formulario
+                this.submit();
+
+            });
+        });
+
+
+
+
+
+
+
+    </script>
+}

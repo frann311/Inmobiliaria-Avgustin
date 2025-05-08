@@ -253,7 +253,107 @@ namespace Inmobiliaria_Avgustin.Models
 
         public IList<Propietario> BuscarPorNombre(string nombre)
         {
-            throw new NotImplementedException();
+            List<Propietario> res = new List<Propietario>();
+            Propietario p = null;
+            nombre = "%" + nombre + "%";
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"SELECT Id, Nombre, Apellido, Dni, Telefono, Email 
+					FROM Propietarios
+					WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@nombre", nombre);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        p = new Propietario
+                        {
+                            Id = reader.GetInt32(nameof(Propietario.Id)),
+                            Nombre = reader.GetString("Nombre"),
+                            Apellido = reader.GetString("Apellido"),
+                            Dni = reader.GetString("Dni"),
+                            Telefono = reader.GetString("Telefono"),
+                            Email = reader.GetString("Email"),
+                        };
+                        res.Add(p);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int contarPropietarios()
+        {
+            int res = 0;
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT COUNT(*) FROM Propietarios;";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    connection.Open();
+                    res = Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+            return res;
+        }
+
+        public IList<Propietario> ObtenerTodosPaginado(int page = 1, int pageSize = 10)
+        {
+
+            var lista = new List<Propietario>();
+            int offset = (page - 1) * pageSize;
+
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    var sql = @"SELECT 
+                        Id, 
+                        Nombre, 
+                        Apellido, 
+                        Dni, 
+                        Email, 
+                        Telefono
+                    FROM Propietarios
+                    ORDER BY Apellido
+                    LIMIT @pageSize OFFSET @offset";
+
+                    using (var command = new MySqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@pageSize", pageSize);
+                        command.Parameters.AddWithValue("@offset", offset);
+                        connection.Open();
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                lista.Add(new Propietario
+                                {
+                                    Id = reader.GetInt32("Id"),
+                                    Nombre = reader.GetString("Nombre"),
+                                    Apellido = reader.GetString("Apellido"),
+                                    Dni = reader.GetString("Dni"),
+                                    Email = reader.GetString("Email"),
+                                    Telefono = reader.GetString("Telefono")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registra el error para diagnóstico
+                Console.WriteLine($"ERROR en ObtenerTodosPaginado: {ex.ToString()}");
+                throw; // Re-lanza la excepción para ver detalles
+            }
+
+            return lista;
         }
     }
 }

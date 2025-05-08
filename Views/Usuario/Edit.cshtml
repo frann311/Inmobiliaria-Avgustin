@@ -1,0 +1,65 @@
+@model Inmobiliaria_Avgustin.Models.UsuarioEditViewModel
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<h2>Editar Usuario</h2>
+
+<form asp-action="Edit" method="post">
+    @* Campo oculto con el Id para que el POST lo reciba *@
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Nombre" class="control-label">Nombre</label>
+        <input asp-for="Nombre" class="form-control" required />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Apellido" class="control-label">Apellido</label>
+        <input asp-for="Apellido" class="form-control" required />
+        <span asp-validation-for="Apellido" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Email" class="control-label">Email</label>
+        <input asp-for="Email" class="form-control" type="email" required />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NewPassword" class="control-label">Nueva Contraseña</label>
+        <input asp-for="NewPassword" class="form-control" type="password"
+            placeholder="Dejar en blanco para no cambiar" />
+        <small class="form-text text-muted">
+            Si dejás este campo vacío, la contraseña actual se mantendrá.
+        </small>
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ConfirmPassword" class="control-label">Confirmar Contraseña</label>
+        <input asp-for="ConfirmPassword" class="form-control" type="password"
+            placeholder="Repetí la nueva contraseña" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label asp-for="Rol" class="control-label">Rol</label>
+        <select asp-for="Rol" class="form-control" required>
+            <option value="">Seleccioná un rol</option>
+            <option value="Administrador" selected="@(Model.Rol=="Administrador")">Administrador</option>
+            <option value="Empleado" selected="@(Model.Rol=="Empleado")">Empleado</option>
+        </select>
+        <span asp-validation-for="Rol" class="text-danger"></span>
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

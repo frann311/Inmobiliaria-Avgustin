@@ -1,0 +1,174 @@
+@model Inmobiliaria_Avgustin.Models.Inmueble
+@using Inmobiliaria_Avgustin.Models
+@{
+    ViewData["Title"] = "Detalles del Inmueble";
+    var contratoVigente = ViewBag.contratoVigente;
+    // Recibimos lista de imágenes desde el controlador
+    var imagenes = ViewBag.Imagenes as IList<Imagen> ?? new List<Imagen>();
+}
+
+<h2>Detalles del Inmueble</h2>
+
+<div class="row mt-4">
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="col-md-6">
+        <!-- Galería de imágenes -->
+        <!-- Galería de imágenes -->
+        <div class="mb-4 border rounded imagenes-container  p-3" style="background-color: #f8f9fa;">
+
+
+
+            <!-- Imagen destacada (portada) -->
+            @{
+                var portada = imagenes.FirstOrDefault(i => i.EsPortada);
+                var otras = imagenes.Where(i => !i.EsPortada).ToList();
+            }
+
+            @if (portada != null)
+            {
+                <div class="text-center mt-3 mb-4">
+                    <div class="position-relative img-wrapper d-inline-block">
+                        <img src="@portada.Url" class="img-fluid rounded shadow-lg" style="max-height: 400px;">
+                    </div>
+                </div>
+            }
+
+            <!-- Miniaturas de otras imágenes -->
+            <div class="d-flex flex-nowrap gap-2 imagenes-container justify-content-start overflow-auto"
+                style="white-space: nowrap;">
+                @foreach (var img in otras)
+                {
+                    <div class="position-relative img-wrapper" style="width: 150px; flex: 0 0 auto;">
+                        <img src="@img.Url" class="" style="width: 100%; height: auto;">
+                    </div>
+                }
+
+                @if (!imagenes.Any())
+                {
+                    <p class="text-center text-muted w-100">No hay imágenes aún.</p>
+                }
+            </div>
+
+        </div>
+
+
+        <!-- Info destacada -->
+        <div class="p-3 bg-light border rounded">
+            <h4>@Model.Direccion</h4>
+            <p class="mb-1"><strong>Tipo:</strong> @Model.Tipo?.Nombre</p>
+            <p class="mb-1"><strong>Uso:</strong> @Model.Uso?.Nombre</p>
+            <p class="mb-1"><strong>Ambientes:</strong> @Model.Ambientes</p>
+            <p class="mb-1"><strong>Precio:</strong> @Model.Precio.ToString("C")</p>
+        </div>
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div class="col-md-6">
+        <!-- Info general -->
+        <div class="p-3 border rounded mb-4">
+            <p><strong>Superficie:</strong> @Model.Superficie m²</p>
+            <p><strong>Coordenadas:</strong> @Model.Coordenadas</p>
+            <p><strong>Estado:</strong> @(Model.Disponible ? "Disponible" : "No disponible")</p>
+            <p><strong>Propietario:</strong> @Model.Propietario?.Nombre @Model.Propietario?.Apellido</p>
+
+            @if (contratoVigente != null)
+            {
+                <p class="text-danger"><strong>Contrato vigente desde:</strong>
+                    @contratoVigente.Fecha_Inicio?.ToString("dd/MM/yyyy") hasta:
+                    @contratoVigente.Fecha_Fin?.ToString("dd/MM/yyyy")
+                </p>
+            }
+            else
+            {
+                <p class="text-success">Sin contrato vigente</p>
+            }
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex gap-2">
+            @if (Model.Disponible)
+            {
+                <a asp-controller="Contrato" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-success">Crear
+                    Contrato</a>
+            }
+            else
+            {
+                <button class="btn btn-secondary" disabled>No disponible para contrato</button>
+            }
+
+            <a asp-controller="Contrato" asp-action="Index" asp-route-InmuebleId="@Model.Id" asp-route-fechaDesde=""
+                asp-route-fechaHasta="" asp-route-diasVencimiento="" class="btn btn-outline-primary">
+                Ver Historial
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        padding-top: 15%;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        max-width: 50%;
+        max-height: 50%;
+        border-radius: 8px;
+    }
+
+    .close {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: #ccc;
+    }
+</style>
+
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="imgModalContent">
+</div>
+
+<script>
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("imgModalContent");
+    const close = document.querySelector(".close");
+
+    document.querySelectorAll(".img-wrapper img").forEach(img => {
+        img.addEventListener("click", () => {
+            modal.style.display = "block";
+            modalImg.src = img.src;
+        });
+    });
+
+    close.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+
+
+
+
+</script>

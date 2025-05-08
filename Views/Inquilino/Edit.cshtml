@@ -1,56 +1,62 @@
 @model Inmobiliaria_Avgustin.Models.Inquilino
+
 @{
     ViewData["Title"] = "Editar Inquilino";
 }
 
-<h2>Editar Inquilino</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Editar Inquilino</h2>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
+    <form asp-action="Edit" method="post" class="needs-validation" novalidate>
+        <input type="hidden" asp-for="Id" />
 
-    <div>
-        <label>Nombre</label>
-        <input asp-for="Nombre" />
-        <span asp-validation-for="Nombre"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Nombre" class="form-label">Nombre</label>
+            <input asp-for="Nombre" class="form-control" required />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label>Apellido</label>
-        <input asp-for="Apellido" />
-        <span asp-validation-for="Apellido"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Apellido" class="form-label">Apellido</label>
+            <input asp-for="Apellido" class="form-control" required />
+            <span asp-validation-for="Apellido" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label>DNI</label>
-        <input asp-for="Dni" />
-        <span asp-validation-for="Dni"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Dni" class="form-label">DNI</label>
+            <input asp-for="Dni" class="form-control" required />
+            <span asp-validation-for="Dni" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label>Teléfono</label>
-        <input asp-for="Telefono" />
-        <span asp-validation-for="Telefono"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Telefono" class="form-label">Teléfono</label>
+            <input asp-for="Telefono" class="form-control" required />
+            <span asp-validation-for="Telefono" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label>Email</label>
-        <input asp-for="Email" />
-        <span asp-validation-for="Email"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" type="email" required />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
 
+        <div class="form-group mb-3">
+            <label asp-for="Trabajo" class="form-label">Trabajo</label>
+            <input asp-for="Trabajo" class="form-control" />
+            <span asp-validation-for="Trabajo" class="text-danger"></span>
+        </div>
 
-    <div>
-        <label>Trabajo</label>
-        <input asp-for="Trabajo" />
-        <span asp-validation-for="Trabajo"></span>
-    </div>
+        <div class="form-group mb-3">
+            <label asp-for="Ingresos" class="form-label">Ingresos</label>
+            <input asp-for="Ingresos" class="form-control" type="number" step="0.01" />
+            <span asp-validation-for="Ingresos" class="text-danger"></span>
+        </div>
 
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
 
-    <div>
-        <label>Ingresos</label>
-        <input asp-for="Ingresos" />
-        <span asp-validation-for="Ingresos"></span>
-    </div>
-
-    <button type="submit">Guardar</button>
-</form>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

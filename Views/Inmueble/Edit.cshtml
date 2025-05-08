@@ -1,0 +1,188 @@
+@model Inmobiliaria_Avgustin.Models.Inmueble
+@using Inmobiliaria_Avgustin.Models
+
+@{
+    ViewData["Title"] = "Editar Inmueble";
+    var Propietarios = ViewBag.Propietarios as IList<Propietario> ?? new List<Propietario>();
+    var TiposInmuebles = ViewBag.TiposInmuebles as IList<TiposInmuebles> ?? new List<TiposInmuebles>();
+    var UsosInmuebles = ViewBag.UsosInmuebles as IList<UsosInmuebles> ?? new List<UsosInmuebles>();
+    var imagenes = ViewBag.Imagenes as IList<Imagen> ?? new List<Imagen>();
+}
+
+<h2>Editar Inmueble</h2>
+
+<div class="row">
+    <!-- Columna Izquierda: Formulario de edición -->
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            <div class="form-group">
+                <label asp-for="Direccion" class="control-label">Direccion</label>
+                <input asp-for="Direccion" class="form-control" required />
+                <span asp-validation-for="Direccion" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="UsoId" class="control-label">Uso</label>
+                <select asp-for="UsoId" class="form-control" required>
+                    @foreach (var uso in UsosInmuebles)
+                    {
+                        <option selected="@(uso?.Id==Model.UsoId)" value="@uso?.Id">@uso?.Nombre</option>
+                        <!-- Usa ?. para evitar NullReferenceException -->
+                    }
+                </select>
+                <span asp-validation-for="Uso" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TipoId" class="control-label">Tipo</label>
+                <select asp-for="TipoId" class="form-control" required>
+                    @foreach (var tipo in TiposInmuebles)
+                    {
+                        <option selected="@(tipo.Id==Model.TipoId)" value="@tipo?.Id">@tipo?.Nombre</option>
+                        <!-- Usa ?. para evitar NullReferenceException -->
+                    }
+                </select>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Ambientes" class="control-label">Ambientes</label>
+                <input asp-for="Ambientes" class="form-control" />
+                <span asp-validation-for="Ambientes" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Coordenadas" class="control-label">Coordenadas</label>
+                <input asp-for="Coordenadas" class="form-control" />
+                <span asp-validation-for="Coordenadas" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Superficie" class="control-label">Superficie</label>
+                <input asp-for="Superficie" class="form-control" />
+                <span asp-validation-for="Superficie" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Precio" class="control-label">Precio</label>
+                <input asp-for="Precio" class="form-control" />
+                <span asp-validation-for="Precio" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="Propietario" class="control-label">Propietario</label>
+                <select id="Propietario" name="PropietarioId" class="form-control" style="width: 100%;">
+
+                    @foreach (var item in Propietarios)
+                    {
+                        /*@:<option @(item.IdPropietario==Model.PropietarioId ? "selected" : "")
+                        value="@item.IdPropietario">@(item.Nombre + " " + item.Apellido)</option>*/
+                        <option selected="@(item.Id==Model.PropietarioId)" value="@item.Id">@(item.Nombre + " " +
+                                                    item.Apellido)
+                    </option>
+                                        }
+                </select>
+                <span asp-validation-for="PropietarioId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <label asp-for="Disponible" class="form-check-label">¿Está disponible?</label>
+                    <input asp-for="Disponible" class="form-check-input" />
+                </div>
+            </div>
+
+
+
+
+            <br />
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Columna Derecha: Gestión de imágenes -->
+    <div class="col-md-6">
+        <div class="border rounded p-3" style="background-color: #f8f9fa;">
+            <h5 class="text-center text-muted">Gestión de Imágenes</h5>
+
+            <!-- Subir nuevas imágenes -->
+            <form asp-controller="Imagen" asp-action="Alta" asp-route-id="@Model.Id" method="post"
+                enctype="multipart/form-data">
+                <div class="mb-2">
+                    <input type="file" name="Imagen" class="form-control" multiple />
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Subir Imágenes</button>
+            </form>
+
+            <!-- Vista previa de imágenes -->
+            <div class="image-gallery imagenes-container  d-flex flex-wrap gap-2 mt-3">
+                @foreach (var img in imagenes)
+                {
+                    <div class="position-relative img-wrapper" style="display: inline-block;">
+                        <img src="@img.Url" class="img-thumbnail" style="width: 100px; height: auto;">
+                        <a asp-controller="Imagen" asp-action="Eliminar" asp-route-id="@img.Id"
+                            class="btn btn-sm btn-danger position-absolute top-0 end-0">x</a>
+                        <form asp-controller="Imagen" asp-action="CambiarPortada" asp-route-id="@img.Id" method="post"
+                            class="position-absolute bottom-0 start-0 m-1">
+                            <button type="submit" class="btn btn-sm btn-warning" title="Marcar como portada">⭐</button>
+                        </form>
+                    </div>
+                }
+
+                @if (!imagenes.Any())
+                {
+                    <p class="text-center text-muted w-100">No hay imágenes aún.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            $(document).ready(function () {
+                $('#Propietario').select2({
+                    placeholder: "Buscar propietario...",
+                    language: "es",
+                    width: '100%',
+                    minimumInputLength: 3,
+                    ajax: {
+                        delay: 250,
+                        dataType: "json",
+                        cache: true,
+                        url: function (params) {
+                            let q = params.term ? encodeURIComponent(params.term) : "";
+                            return `/Propietario/Buscar/${q}`;
+                        },
+                        processResults: function (res) {
+                            console.log("Respuesta de la API:", res);
+                            return {
+                                results: res.datos.map(p => ({
+                                    id: p.id,
+                                    text: `${p.nombre} ${p.apellido}`
+                                }))
+                            };
+                        }
+                    }
+                });
+
+                // Cuando seleccionás una opción, agregala manualmente como option
+                $('form').on('submit', function () {
+                    console.log("Valor de PropietarioId:", $('#Propietario').val());
+                    let selectedData = $('#Propietario').select2('data')[0];
+                    if (selectedData) {
+                        let option = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#Propietario').append(option);
+                    }
+                });
+
+            });
+
+        </script>
+    }
+}

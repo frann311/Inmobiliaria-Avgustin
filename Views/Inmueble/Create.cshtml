@@ -1,0 +1,144 @@
+@using Inmobiliaria_Avgustin.Models
+@model Inmobiliaria_Avgustin.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Crear Inmueble";
+    @* var TiposInmuebles = (IList<TiposInmuebles>)ViewBag.TiposInmuebles;
+    var UsosInmuebles = (IList<UsosInmuebles>)ViewBag.UsosInmuebles; *@
+    var TiposInmuebles = ViewBag.TiposInmuebles as IList<TiposInmuebles> ?? new List<TiposInmuebles>();
+    var UsosInmuebles = ViewBag.UsosInmuebles as IList<UsosInmuebles> ?? new List<UsosInmuebles>();
+    var Propietarios = ViewBag.PropietarioSelect;
+
+}
+
+<h2>Crear Inmueble</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="Direccion" class="control-label">Direccion</label>
+        <input asp-for="Direccion" class="form-control" required />
+        <span asp-validation-for="Direccion" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label asp-for="UsoId" class="control-label">Uso</label>
+        <select asp-for="UsoId" class="form-control" required>
+            <option value="">Seleccioná un uso</option>
+
+            @foreach (var tipo in UsosInmuebles)
+            {
+                <option value="@tipo?.Id">@tipo?.Nombre</option> <!-- Usa ?. para evitar NullReferenceException -->
+            }
+
+        </select>
+        <span asp-validation-for="UsoId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TipoId" class="control-label">Tipo</label>
+        <select asp-for="TipoId" class="form-control" required>
+            <option value="">Seleccioná un tipo</option>
+            @foreach (var tipo in TiposInmuebles)
+            {
+                <option value="@tipo?.Id">@tipo?.Nombre</option> <!-- Usa ?. para evitar NullReferenceException -->
+            }
+
+        </select>
+        <span asp-validation-for="TipoId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Ambientes" class="control-label">Ambientes</label>
+        <input asp-for="Ambientes" class="form-control" />
+        <span asp-validation-for="Ambientes" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Coordenadas" class="control-label">Coordenadas</label>
+        <input asp-for="Coordenadas" class="form-control" />
+        <span asp-validation-for="Coordenadas" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Superficie" class="control-label">Superficie</label>
+        <input asp-for="Superficie" class="form-control" />
+        <span asp-validation-for="Superficie" class="text-danger"></span>
+
+
+        <div class="form-group">
+            <label asp-for="Precio" class="control-label">Precio</label>
+            <input asp-for="Precio" class="form-control" />
+            <span asp-validation-for="Precio" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="PropietarioId" class="control-label">Propietario</label>
+            <select id="Propietario" name="PropietarioId" class="form-control" style="width: 100%;">
+                @if (Propietarios != null)
+                {
+                    <option value="@Propietarios?.Id">@Propietarios?.Nombre @Propietarios?.Apellido</option>
+                }
+            </select>
+            <span asp-validation-for="PropietarioId" class="text-danger"></span>
+        </div>
+
+
+
+
+        <br />
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            $(document).ready(function () {
+                $('#Propietario').select2({
+                    placeholder: "Buscar propietario...",
+                    language: "es",
+                    width: '100%',
+                    minimumInputLength: 3,
+                    ajax: {
+                        delay: 250,
+                        dataType: "json",
+                        cache: true,
+                        url: function (params) {
+                            let q = params.term ? encodeURIComponent(params.term) : "";
+                            return `/Propietario/Buscar/${q}`;
+                        },
+                        processResults: function (res) {
+                            console.log("Respuesta de la API:", res);
+                            return {
+                                results: res.datos.map(p => ({
+                                    id: p.id,
+                                    text: `${p.nombre} ${p.apellido}`
+                                }))
+                            };
+                        }
+                    }
+                });
+
+                // Cuando seleccionás una opción, agregala manualmente como option
+                $('form').on('submit', function () {
+                    console.log("Valor de PropietarioId:", $('#Propietario').val());
+                    let selectedData = $('#Propietario').select2('data')[0];
+                    if (selectedData) {
+                        let option = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#Propietario').append(option);
+                    }
+                });
+
+            });
+
+
+
+        </script>
+    }
+}

@@ -1,0 +1,278 @@
+@{
+    ViewData["Title"] = "Lista de Inmuebles";
+    bool? disponible = ViewBag.Disponible as bool?;
+    int page = ViewBag.Page;
+    int? propietarioId = ViewBag.PropietarioId as int?;
+    var TiposInmuebles = ViewBag.TiposInmuebles as IList<TiposInmuebles> ?? new List<TiposInmuebles>();
+    var UsosInmuebles = ViewBag.UsosInmuebles as IList<UsosInmuebles> ?? new List<UsosInmuebles>();
+
+}
+
+<div class="container mt-4">
+    <h2>Lista de Inmuebles</h2>
+    <a href="@Url.Action("Create", "Inmueble")" class="btn btn-success mb-3">Agregar Nuevo Inmueble</a>
+
+    <form id="filtroFechasForm" method="get" novalidate class="row g-3 mb-4 needs-validation">
+
+        <!-- Filtro por disponibilidad -->
+        <div class="col-auto">
+            <label for="disponible" class="form-label">Disponibilidad</label>
+            <select name="disponible" id="disponible" class="form-select">
+                <option value="">-- Todos --</option>
+                <option value="true" selected="@(disponible == true ? "selected" : null)">Solo disponibles</option>
+                <option value="false" selected="@(disponible == false ? "selected" : null)">Solo no disponibles</option>
+            </select>
+        </div>
+
+        <!-- Select2: propietario -->
+        <div class="col-auto">
+            <label for="propietarioSelect" class="form-label">Propietario</label>
+            <select id="propietarioSelect" name="propietarioId" class="form-select" style="width: 200px;">
+                @if (ViewBag.PropietarioSeleccionado != null)
+                {
+                    var p = (Inmobiliaria_Avgustin.Models.Propietario)ViewBag.PropietarioSeleccionado;
+                    <option value="@p.Id" selected>@p.Nombre @p.Apellido</option>
+                }
+            </select>
+        </div>
+
+        <!-- Fecha Desde -->
+        <div class="col-auto">
+            <label for="fechaDesde" class="form-label">Desde</label>
+            <input type="date" id="fechaDesde" name="fechaDesde" value="@ViewBag.FechaDesde" class="form-control" />
+        </div>
+
+        <!-- Fecha Hasta -->
+        <div class="col-auto">
+            <label for="fechaHasta" class="form-label">Hasta</label>
+            <input type="date" id="fechaHasta" name="fechaHasta" value="@ViewBag.FechaHasta" class="form-control" />
+        </div>
+
+        <!-- Tipo de inmueble -->
+        <div class="col-auto">
+            <label for="TipoId" class="form-label">Tipo</label>
+            <select id="TipoId" name="TipoId" class="form-select">
+                <option value="">Seleccioná un tipo</option>
+                @foreach (var tipo in TiposInmuebles)
+                {
+                    <option value="@tipo.Id" selected="@(tipo.Id == ViewBag.TipoId ? "selected" : null)">
+                        @tipo.Nombre
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Uso del inmueble -->
+        <div class="col-auto">
+            <label for="UsoId" class="form-label">Uso</label>
+            <select id="UsoId" name="UsoId" class="form-select">
+                <option value="">Seleccioná un uso</option>
+                @foreach (var uso in UsosInmuebles)
+                {
+                    <option value="@uso.Id" selected="@(uso.Id == ViewBag.UsoId ? "selected" : null)">
+                        @uso.Nombre
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Botón de envío -->
+        <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+        </div>
+
+        <div class="col-auto align-self-end">
+            <a asp-controller="Inmueble" asp-action="Index" class="btn btn-primary btn-sm">quitar Filtros</a>
+        </div>
+
+
+    </form>
+
+
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Dirección</th>
+                <th>Uso</th>
+                <th>Tipo</th>
+                <th>Ambientes</th>
+                <th>Precio</th>
+                <th>Coordenadas</th>
+                <th>Disponible</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Inmueble in Model)
+            {
+                <tr>
+                    <td>@Inmueble.Direccion</td>
+                    <td>@Inmueble.Uso.Nombre</td>
+                    <td>@Inmueble.Tipo.Nombre</td>
+                    <td>@Inmueble.Ambientes</td>
+                    <td>@Inmueble.Precio</td>
+                    <td>@Inmueble.Coordenadas</td>
+                    <td>@Inmueble.Disponible</td>
+
+
+
+                    <td>
+                        <a href="@Url.Action("Edit", "Inmueble", new { id = Inmueble.Id })"
+                            class="btn btn-warning btn-sm">Editar</a>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <a href="@Url.Action("Delete", "Inmueble", new { id = Inmueble.Id })"
+                                class="btn btn-danger btn-sm">Eliminar</a>
+                        }
+                        <a href="@Url.Action("Details", "Inmueble", new { id = Inmueble.Id })"
+                            class="btn btn-warning btn-sm">Mas</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @{
+        int currentPage = ViewBag.Page as int? ?? 1;
+        int totalPages = ViewBag.TotalPages as int? ?? 1;
+
+        var queryParams = new Dictionary<string, string>();
+
+        if (disponible != null)
+            queryParams["disponible"] = disponible.ToString().ToLower();
+        if (propietarioId != null)
+            queryParams["propietarioId"] = propietarioId.ToString();
+        if (!string.IsNullOrEmpty(ViewBag.FechaDesde))
+            queryParams["fechaDesde"] = ViewBag.FechaDesde;
+        if (!string.IsNullOrEmpty(ViewBag.FechaHasta))
+            queryParams["fechaHasta"] = ViewBag.FechaHasta;
+        if (ViewBag.TipoId != null)
+            queryParams["TipoId"] = ViewBag.TipoId.ToString();
+        if (ViewBag.UsoId != null)
+            queryParams["UsoId"] = ViewBag.UsoId.ToString();
+
+        string BuildUrl(int p)
+        {
+            var all = new Dictionary<string, string>(queryParams)
+            {
+                ["page"] = p.ToString()
+            };
+            var qs = string.Join("&", all.Select(kv => $"{kv.Key}={kv.Value}"));
+            return "?" + qs;
+        }
+    }
+
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@(currentPage > 1 ? BuildUrl(currentPage - 1) : "#")" tabindex="-1">
+                    &laquo; Anterior
+                </a>
+            </li>
+
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Página @currentPage de @totalPages
+                </span>
+            </li>
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@(currentPage < totalPages ? BuildUrl(currentPage + 1) : "#")">
+                    Siguiente &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            $(document).ready(function () {
+                $('#propietarioSelect').select2({
+                    placeholder: "Buscar propietario...",
+                    language: "es",
+                    width: '100%',
+                    minimumInputLength: 3,
+                    ajax: {
+                        delay: 250,
+                        dataType: "json",
+                        cache: true,
+                        url: function (params) {
+                            let q = params.term ? encodeURIComponent(params.term) : "";
+                            return `/Propietario/Buscar/${q}`;
+                        },
+                        processResults: function (res) {
+                            console.log("Respuesta de la API:", res);
+                            return {
+                                results: res.datos.map(p => ({
+                                    id: p.id,
+                                    text: `${p.nombre} ${p.apellido}`
+                                }))
+                            };
+                        }
+                    }
+                });
+
+                // Cuando seleccionás una opción, agregala manualmente como option
+                $('form').on('submit', function () {
+                    console.log("Valor de PropietarioId:", $('#propietarioSelect').val());
+                    let selectedData = $('#propietarioSelect').select2('data')[0];
+                    if (selectedData) {
+                        let option = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#propietarioSelect').append(option);
+                    }
+                });
+
+            });
+
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById("filtroFechasForm");
+
+                form.addEventListener("submit", function (e) {
+                    const desde = document.getElementById("fechaDesde");
+                    const hasta = document.getElementById("fechaHasta");
+
+                    const fechaDesde = desde.value;
+                    const fechaHasta = hasta.value;
+
+                    // Reset feedback
+                    desde.classList.remove("is-invalid");
+                    hasta.classList.remove("is-invalid");
+
+                    // 1. Si ambas fechas están vacías → OK
+                    if (!fechaDesde && !fechaHasta) {
+                        return;
+                    }
+
+                    // 2. Si solo una está vacía → error
+                    if ((fechaDesde && !fechaHasta) || (!fechaDesde && fechaHasta)) {
+                        if (!fechaDesde) desde.classList.add("is-invalid");
+                        if (!fechaHasta) hasta.classList.add("is-invalid");
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // 3. Si Hasta < Desde → error
+                    if (fechaDesde > fechaHasta) {
+                        hasta.classList.add("is-invalid");
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest('#quitarBtn')) return;
+
+                const desde = document.getElementById("fechaDesde");
+                const hasta = document.getElementById("fechaHasta");
+
+            });
+
+
+
+        </script>
+    }
+}

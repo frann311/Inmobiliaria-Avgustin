@@ -1,0 +1,63 @@
+@model Inmobiliaria_Avgustin.Models.Pago
+
+<h2>Detalle del Pago</h2>
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <td>@Model.Id</td>
+    </tr>
+    <tr>
+        <th>Contrato</th>
+        <td>@Model.ContratoId</td>
+    </tr>
+    <tr>
+        <th>Número</th>
+        <td>@Model.NumeroPago</td>
+    </tr>
+    <tr>
+        <th>Vencimiento</th>
+        <td>@Model.Fecha_Vencimiento.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Importe</th>
+        <td>@Model.Importe.ToString("C")</td>
+    </tr>
+    <tr>
+        <th>Concepto</th>
+        <td>@Model.Concepto</td>
+    </tr>
+    <tr>
+        <th>Anulado</th>
+        <td>@(Model.Anulado ? "Sí" : "No")</td>
+    </tr>
+</table>
+
+@if (User.IsInRole("Administrador") && (Model.UsuarioCreador != null || Model.UsuarioAnulador != null))
+{
+    <h4>Auditoría</h4>
+    <table class="table table-bordered">
+        @if (Model.UsuarioCreador != null)
+        {
+            <tr>
+                <th>Dado de alta por</th>
+                <td>
+                    @Model.UsuarioCreador.Nombre @Model.UsuarioCreador.Apellido
+                    <br /><small class="text-muted">@Model.CreadoEn.ToString("dd/MM/yyyy HH:mm")</small>
+                </td>
+            </tr>
+        }
+        @if (Model.UsuarioAnulador != null)
+        {
+            <tr>
+                <th>Anulado por</th>
+                <td>
+                    @Model.UsuarioAnulador.Nombre @Model.UsuarioAnulador.Apellido
+                    <br /><small class="text-muted">@Model.AnuladoEn?.ToString("dd/MM/yyyy HH:mm")</small>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+<a asp-controller="Pago" asp-action="Index" asp-route-id="@Model.ContratoId" class="btn btn-primary">Volver al
+    listado</a>

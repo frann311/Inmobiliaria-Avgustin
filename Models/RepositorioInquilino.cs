@@ -237,9 +237,135 @@ namespace Inmobiliaria_Avgustin.Models
 
         public IList<Inquilino> BuscarPorNombre(string nombre)
         {
-            throw new NotImplementedException();
+            List<Inquilino> res = new List<Inquilino>();
+            Inquilino p = null;
+            nombre = "%" + nombre + "%";
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                var sql = @"SELECT 
+                        Id, 
+                        Nombre, 
+                        Apellido, 
+                        Dni, 
+                        Email, 
+                        Telefono,
+                        Trabajo,
+                        Ingresos
+                    FROM Inquilinos
+                    WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@nombre", nombre);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            p = new Inquilino
+                            {
+                                Id = reader.GetInt32("Id"),
+                                Nombre = reader.GetString("Nombre"),
+                                Apellido = reader.GetString("Apellido"),
+                                Dni = reader.GetString("Dni"),
+                                Email = reader.GetString("Email"),
+                                Telefono = reader.GetString("Telefono"),
+                                Trabajo = reader.GetString("Trabajo"),
+                                Ingresos = reader.GetInt32("Ingresos")
+                            };
+                            Console.WriteLine("Inquilino: " + p.Nombre + " " + p.Apellido);
+                            res.Add(p);
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
         }
 
+        public IList<Inquilino> obtenerTodosPaginado(int page = 1, int pageSize = 10)
+        {
+            var lista = new List<Inquilino>();
+
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    var sql = @"SELECT 
+                        Id, 
+                        Nombre, 
+                        Apellido, 
+                        Dni, 
+                        Email, 
+                        Telefono,
+                        Trabajo,
+                        Ingresos
+                    FROM inquilinos 
+                    ORDER BY Apellido, Nombre
+                    LIMIT @pageSize OFFSET @offset";
+
+                    using (var command = new MySqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@pageSize", pageSize);
+                        command.Parameters.AddWithValue("@offset", (page - 1) * pageSize);
+                        connection.Open();
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                lista.Add(new Inquilino
+                                {
+                                    Id = reader.GetInt32("Id"),
+                                    Nombre = reader.GetString("Nombre"),
+                                    Apellido = reader.GetString("Apellido"),
+                                    Dni = reader.GetString("Dni"),
+                                    Email = reader.GetString("Email"),
+                                    Telefono = reader.GetString("Telefono"),
+                                    Trabajo = reader.GetString("Trabajo"),
+                                    Ingresos = reader.GetInt32("Ingresos")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registra el error para diagnóstico
+                Console.WriteLine($"ERROR en ObtenerTodosPaginado: {ex.ToString()}");
+                throw; // Re-lanza la excepción para ver detalles
+            }
+
+            return lista;
+        }
+
+        public int CantarInquilinos()
+        {
+            int res = 0;
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    var sql = @"SELECT COUNT(*) FROM inquilinos";
+
+                    using (var command = new MySqlCommand(sql, connection))
+                    {
+                        connection.Open();
+                        res = Convert.ToInt32(command.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registra el error para diagnóstico
+                Console.WriteLine($"ERROR en CantarInquilinos: {ex.ToString()}");
+                throw; // Re-lanza la excepción para ver detalles
+            }
+
+            return res;
+        }
     }
 
 }

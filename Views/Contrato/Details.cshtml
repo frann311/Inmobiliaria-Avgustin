@@ -1,0 +1,232 @@
+@model Inmobiliaria_Avgustin.Models.Contrato
+
+@{
+    ViewData["Title"] = "Detalles del Contrato";
+    var fechaInicioStr = Model.Fecha_Inicio.ToString("yyyy-MM-dd");
+    var fechaFinStr = Model.Fecha_Fin.ToString("yyyy-MM-dd");
+    var montoStr = Model.Monto.ToString("F2");
+    var PagosAdeudados = ViewBag.PagosAdeudados;
+    var PagosRestantes = ViewBag.PagosRestantes;
+}
+
+<h2>Detalles del Contrato</h2>
+
+<div class="row mt-4">
+    <!-- Columna izquierda: datos principales del contrato -->
+    <div class="col-md-6">
+        <h4>Información del Contrato</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>ID</th>
+                <td>@Model.Id</td>
+            </tr>
+            @* using Microsoft.EntityFrameworkCore.Metadata.Internal; *@
+            <tr>
+                <th>Inmueble</th>
+                <td>
+                    @Model.Inmueble?.Direccion
+                    <a href="@Url.Action("Details", "Inmueble", new { id = Model.Id_Inmueble})">(Ver)</a>
+
+
+                </td>
+            </tr>
+            <tr>
+                <th>Inquilino</th>
+                <td>
+                    @Model.Inquilino?.Nombre @Model.Inquilino?.Apellido
+
+                </td>
+            </tr>
+            <tr>
+                <th>Monto mensual</th>
+                <td>@Model.Monto.ToString("C")</td>
+            </tr>
+            <tr>
+                <th>Fecha Inicio</th>
+                <td>@Model.Fecha_Inicio.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Fecha Fin</th>
+                <td>@Model.Fecha_Fin.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Fecha Rescisión</th>
+                <td>@(Model.Fecha_Rescision?.ToString("dd/MM/yyyy") ?? "-")</td>
+            </tr>
+            <tr>
+                <th>Multa</th>
+                <td>@((Model.Multa?? 0).ToString("C") ?? "-")</td>
+            </tr>
+
+
+            <tr>
+                <th>Pagos vencidos</th>
+                <td>
+                    @{
+                        if (ViewBag.PagosAdeudados == 0)
+                        {
+                            <span class="text-success">@((ViewBag.PagosAdeudados ?? 0).ToString("C"))</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">@((ViewBag.PagosAdeudados ?? 0).ToString("C"))</span>
+                            ;
+                        }
+
+                    }
+
+                </td>
+            </tr>
+            <tr>
+                <th>Total restante</th>
+                <td>
+                    @{
+                        if (ViewBag.PagosRestantes == 0)
+                        {
+                            <span class="text-success">@((ViewBag.PagosRestantes ?? 0).ToString("C"))</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">@((ViewBag.PagosRestantes ?? 0).ToString("C"))</span>
+                            ;
+                        }
+
+                    }
+
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Columna derecha: auditoría y acciones -->
+    <div class="col-md-6">
+        <h4>Auditoría</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>Creado por</th>
+                <td>@Model.UsuarioCreador.Nombre @Model.UsuarioCreador.Apellido</td>
+            </tr>
+            <tr>
+                <th>Fecha de creación</th>
+                <td>@Model.Creado_En.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+            @if (Model.Fecha_Rescision != null)
+            {
+                <tr>
+                    <th>Rescindido por</th>
+                    <td>@Model.UsuarioFinalizador.Nombre @Model.UsuarioFinalizador.Apellido</td>
+                </tr>
+            }
+            <tr>
+                <th>Última modificación</th>
+                <td>@Model.Actualizado_En.ToString("dd/MM/yyyy HH:mm")</td>
+
+        </table>
+
+        @if (Model.Fecha_Rescision == null)
+        {
+
+            <form asp-action="RescindirConfirmado" method="post" id="rescindirForm">
+                <input type="hidden" name="id" value="@Model.Id" />
+
+                <div class="form-group">
+                    <label for="fechaRescision">Fecha efectiva de rescisión</label>
+                    <input type="date" id="fechaRescision" name="fechaRescision" class="form-control" min="@fechaInicioStr"
+                        max="@fechaFinStr" required />
+                    <span asp-validation-for="Fecha_Rescision" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label>Multa por rescisión:</label>
+                    <p id="multaInfo" class="fst-italic text-muted">
+                        Seleccione la fecha de rescisión para ver la multa.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn btn-danger" id="confirmButton" disabled>
+                    Confirmar Rescisión
+                </button>
+
+            </form>
+        }
+        @if (Model.Fecha_Rescision == null || Model.Fecha_Rescision <= Model.Fecha_Fin)
+        {
+            <div class="form-group">
+                <a asp-action="Renovar" asp-route-id="@Model.Id" class="btn btn-outline-success">
+                    Renovar Contrato
+                </a>
+
+            </div>
+        }
+        <div class="form-group">
+            <a asp-action="Index" class="btn btn-secondary ms">Volver</a>
+            <a href="@Url.Action("Index", "Pago", new { id = Model?.Id })" class="btn btn-secondary ms-2">Ver Pagos</a>
+        </div>
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Datos desde el servidor
+        const fechaInicio = new Date('@fechaInicioStr');
+        const fechaFin = new Date('@fechaFinStr');
+        const montoMensual = parseFloat('@montoStr');
+
+        // Helpers para calcular meses completos entre dos fechas
+        function monthDiff(start, end) {
+            let months = (end.getFullYear() - start.getFullYear()) * 12
+                + (end.getMonth() - start.getMonth());
+            // Si el día del mes de 'end' es menor, no cuenta mes completo
+            if (end.getDate() < start.getDate()) months--;
+            return months;
+        }
+
+        // Elementos del DOM
+        const inputRescision = document.getElementById('fechaRescision');
+        const infoMulta = document.getElementById('multaInfo');
+        const btnConfirm = document.getElementById('confirmButton');
+
+        inputRescision.addEventListener('change', function () {
+            const v = this.valueAsDate;
+            // Validar rango
+            if (!v || v < fechaInicio || v > fechaFin) {
+                infoMulta.innerHTML = `<span class="text-danger">
+                                                                                                                                                                                                                                                                    La fecha debe estar entre ${fechaInicio.toLocaleDateString()}  
+                                                                                                                                                                                                                                                                    y ${fechaFin.toLocaleDateString()}.
+                                                                                                                                                                                                                                                                </span>`;
+                btnConfirm.disabled = true;
+                return;
+            }
+
+            // Cálculo de meses
+            const mesesOriginales = monthDiff(fechaInicio, fechaFin);
+            const mesesTranscurridos = monthDiff(fechaInicio, v);
+            // Si rescisión ocurre antes de completar el primer mes, lo contamos como 0
+            const trans = Math.max(0, mesesTranscurridos);
+
+            // Regla narrada:
+            // menos de la mitad → 2 meses de multa; si no, 1 mes.
+            const penaltyMonths = trans < (mesesOriginales / 2) ? 2 : 1;
+            const multa = penaltyMonths * montoMensual;
+
+            infoMulta.innerHTML = `
+                                                                                                                                                                                                                                                                <strong>${penaltyMonths} mes(es) de multa</strong>  
+                                                                                                                                                                                                                                                                (<em>$${multa.toFixed(2)}</em>)
+                                                                                                                                                                                                                                                            `;
+            btnConfirm.disabled = false;
+        });
+    </script>
+}

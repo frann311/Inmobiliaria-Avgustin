@@ -19,6 +19,8 @@ namespace Inmobiliaria_Avgustin.Models
         public string Telefono { get; set; }
 
         [Required(ErrorMessage = "El Email es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Debe ser un email válido.")]
         public string Email { get; set; }
+
     }
 }
